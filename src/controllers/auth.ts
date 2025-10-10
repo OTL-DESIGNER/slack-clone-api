@@ -297,3 +297,50 @@ export const createUserDirect = async (
     next(error)
   }
 }
+
+// @desc    Direct login for production (temporary bypass for email verification)
+// @route   POST /api/v1/auth/direct-login
+// @access  Public (temporary for setup)
+export const directLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { email } = req.body
+
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      data: {
+        name: 'Please provide an email address',
+      },
+    })
+  }
+
+  try {
+    // Find user by email
+    const user = await User.findOne({ email })
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        data: {
+          name: 'User not found. Please create the user first.',
+        },
+      })
+    }
+
+    // Return user data with JWT token immediately (using production JWT_SECRET)
+    res.status(200).json({
+      success: true,
+      data: {
+        username: user.username,
+        email: user.email,
+        token: user.getSignedJwtToken(),
+        message: 'Direct login successful',
+      },
+    })
+  } catch (error) {
+    next(error)
+  }
+}

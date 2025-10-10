@@ -5,6 +5,7 @@ import {
   signin,
   verify,
   createUserDirect,
+  directLogin,
 } from '../controllers/auth'
 import passport from 'passport'
 
@@ -17,5 +18,6 @@ router.get('/google', passport.authenticate('google', ['profile', 'email']))
 
 router.get('/google/callback', googleCallback)
 router.post('/create-user-direct', createUserDirect)
+router.post('/direct-login', directLogin)
 
 export default router
