@@ -433,7 +433,7 @@ const isVercelServerless =
 console.log('Is Vercel serverless:', isVercelServerless)
 
 if (!isVercelServerless) {
-  const port = process.env.PORT || 8081
+  const port = Number(process.env.PORT) || 8081
   console.log(`🚀 Attempting to start server on port ${port}`)
 
   server.listen(port, '0.0.0.0', () => {
