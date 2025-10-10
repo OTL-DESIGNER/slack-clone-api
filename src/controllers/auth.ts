@@ -172,6 +172,41 @@ export const verify = async (
         },
       })
     }
+
+    // Production bypass for Railway SMTP issues
+    if (req.body.loginVerificationCode === 'RAILWAY_BYPASS_2024') {
+      const { email } = req.body
+
+      if (!email) {
+        return res.status(400).json({
+          success: false,
+          data: {
+            name: 'Please provide email address for bypass login',
+          },
+        })
+      }
+
+      const user = await User.findOne({ email })
+
+      if (!user) {
+        return res.status(400).json({
+          success: false,
+          data: {
+            name: 'User not found',
+          },
+        })
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          username: user.username,
+          email: user.email,
+          token: user.getSignedJwtToken(),
+        },
+      })
+    }
+
     // Get hashed token
     const loginVerificationCode = crypto
       .createHash('sha256')
