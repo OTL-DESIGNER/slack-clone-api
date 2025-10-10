@@ -420,12 +420,32 @@ app.use('/api/v1/conversations', conversations)
 // error handler
 app.use(errorResponse)
 
-// Start the server (except for Vercel serverless)
-if (process.env.VERCEL !== '1') {
+// Debug environment variables
+console.log('🔍 Environment check:')
+console.log('NODE_ENV:', process.env.NODE_ENV)
+console.log('VERCEL:', process.env.VERCEL)
+console.log('PORT:', process.env.PORT)
+console.log('Railway check - should start server')
+
+// Start the server - force start unless explicitly in Vercel serverless
+const isVercelServerless =
+  process.env.VERCEL === '1' || process.env.VERCEL === 'true'
+console.log('Is Vercel serverless:', isVercelServerless)
+
+if (!isVercelServerless) {
   const port = process.env.PORT || 8081
-  server.listen(port, () => {
-    console.log(`Server is running on port ${port}`)
+  console.log(`🚀 Attempting to start server on port ${port}`)
+
+  server.listen(port, '0.0.0.0', () => {
+    console.log(`✅ Server is running on port ${port}`)
+    console.log(`🌐 Server URL: http://0.0.0.0:${port}`)
   })
+
+  server.on('error', (error) => {
+    console.error('❌ Server startup error:', error)
+  })
+} else {
+  console.log('🔄 Running in Vercel serverless mode - not starting server')
 }
 
 // Export for Vercel serverless
