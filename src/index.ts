@@ -420,9 +420,8 @@ app.use('/api/v1/conversations', conversations)
 // error handler
 app.use(errorResponse)
 
-// For Vercel serverless deployment
-if (process.env.NODE_ENV !== 'production') {
-  // Start the server locally
+// Start the server (except for Vercel serverless)
+if (process.env.VERCEL !== '1') {
   const port = process.env.PORT || 8081
   server.listen(port, () => {
     console.log(`Server is running on port ${port}`)
