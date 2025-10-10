@@ -32,15 +32,12 @@ const organisationSchema = new mongoose.Schema<OrganisationSchemaType>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 )
 
-// Generate orgnaisation join link
+// Generate organisation join link
 organisationSchema.methods.generateJoinLink = function () {
-  const url =
-    process.env.NODE_ENV === 'development'
-      ? process.env.STAGING_URL
-      : process.env.PRODUCTION_URL
+  const url = process.env.CLIENT_URL || 'http://localhost:3000'
   this.joinLink = `${url}/${this._id}`
   this.url = `${url}/${this.name}`
 }

@@ -13,7 +13,7 @@ import { joinTeammatesEmail } from '../html/join-teammates-email'
 export async function createTeammates(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     const { emails, channelId, organisationId, userIds } = req.body
@@ -31,10 +31,27 @@ export async function createTeammates(
           channel = await Channel.findOneAndUpdate(
             { _id: channelId },
             { $addToSet: { collaborators: id } },
-            { new: true }
+            { new: true },
           ).populate('collaborators')
 
           const user = await User.findById(id)
+
+          // Ensure organisation has join links generated
+          if (!organisation.joinLink || !organisation.url) {
+            const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000'
+            await Organisation.findOneAndUpdate(
+              { _id: organisationId },
+              {
+                $set: {
+                  joinLink: `${clientUrl}/${organisationId}`,
+                  url: `${clientUrl}/${organisation.name}`,
+                },
+              },
+            )
+            // Update local object for email
+            organisation.joinLink = `${clientUrl}/${organisationId}`
+            organisation.url = `${clientUrl}/${organisation.name}`
+          }
 
           sendEmail(
             user.email,
@@ -45,8 +62,8 @@ export async function createTeammates(
               organisation.name,
               req.user.id,
               organisation.joinLink,
-              organisation.url
-            )
+              organisation.url,
+            ),
           )
         } catch (error) {
           next(error)
@@ -63,12 +80,29 @@ export async function createTeammates(
           channel = await Channel.findOneAndUpdate(
             { _id: channelId },
             { $push: { collaborators: newUser._id } },
-            { new: true }
+            { new: true },
           ).populate('collaborators')
           await Organisation.findOneAndUpdate(
             { _id: organisationId },
-            { $push: { coWorkers: newUser._id } }
+            { $push: { coWorkers: newUser._id } },
           )
+          // Ensure organisation has join links generated
+          if (!organisation.joinLink || !organisation.url) {
+            const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000'
+            await Organisation.findOneAndUpdate(
+              { _id: organisationId },
+              {
+                $set: {
+                  joinLink: `${clientUrl}/${organisationId}`,
+                  url: `${clientUrl}/${organisation.name}`,
+                },
+              },
+            )
+            // Update local object for email
+            organisation.joinLink = `${clientUrl}/${organisationId}`
+            organisation.url = `${clientUrl}/${organisation.name}`
+          }
+
           // send email to the ids
           sendEmail(
             email,
@@ -79,8 +113,8 @@ export async function createTeammates(
               organisation.name,
               req.user.id,
               organisation.joinLink,
-              organisation.url
-            )
+              organisation.url,
+            ),
           )
         } catch (error) {
           next(error)
@@ -107,7 +141,7 @@ export async function createTeammates(
                   {
                     $addToSet: { coWorkers: existingUser._id },
                   },
-                  { new: true }
+                  { new: true },
                 ).populate(['coWorkers', 'owner'])
               }
             } else {
@@ -119,8 +153,26 @@ export async function createTeammates(
                     coWorkers: newUser._id,
                   },
                 },
-                { new: true }
+                { new: true },
               ).populate(['coWorkers', 'owner'])
+            }
+
+            // Ensure organisation has join links generated
+            if (!organisation.joinLink || !organisation.url) {
+              const clientUrl =
+                process.env.CLIENT_URL || 'http://localhost:3000'
+              await Organisation.findOneAndUpdate(
+                { _id: organisationId },
+                {
+                  $set: {
+                    joinLink: `${clientUrl}/${organisationId}`,
+                    url: `${clientUrl}/${organisation.name}`,
+                  },
+                },
+              )
+              // Update local object for email
+              organisation.joinLink = `${clientUrl}/${organisationId}`
+              organisation.url = `${clientUrl}/${organisation.name}`
             }
 
             // vibe and inshallah
@@ -133,8 +185,8 @@ export async function createTeammates(
                 organisation.name,
                 req.user.id,
                 organisation.joinLink,
-                organisation.url
-              )
+                organisation.url,
+              ),
             )
           } catch (error) {
             next(error)
@@ -211,7 +263,7 @@ export async function createTeammates(
 export async function getTeammate(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     const coworkerId = req.params.id

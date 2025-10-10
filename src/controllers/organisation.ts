@@ -11,7 +11,7 @@ import { UserSchemaType } from 'src/models/user'
 export async function getOrganisation(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     const id = req.params.id
@@ -39,14 +39,14 @@ export async function getOrganisation(
         (conversation) =>
           conversation.collaborators.some(
             (collaborator: UserSchemaType) =>
-              collaborator._id.toString() === req.user.id
-          )
+              collaborator._id.toString() === req.user.id,
+          ),
       )
 
       const updatedConversations = conversationsWithCurrentUser.map((convo) => {
         // Find the index of the collaborator with the current user's ID
         const currentUserIndex = convo.collaborators.findIndex(
-          (coworker: UserSchemaType) => coworker._id.toString() === req.user.id
+          (coworker: UserSchemaType) => coworker._id.toString() === req.user.id,
         )
 
         const collaborators = [...convo.collaborators]
@@ -67,14 +67,14 @@ export async function getOrganisation(
 
       // Check if the authenticated user is a co-worker of the organisation
       const currentUserIsCoWorker = organisation.coWorkers.some(
-        (coworker: UserSchemaType) => coworker._id.toString() === req.user.id
+        (coworker: UserSchemaType) => coworker._id.toString() === req.user.id,
       )
 
       // Replace the profile object with the corresponding co-worker's values
       let profile: UserSchemaType
       if (currentUserIsCoWorker) {
         const currentUser = organisation.coWorkers.find(
-          (coworker: UserSchemaType) => coworker._id.toString() === req.user.id
+          (coworker: UserSchemaType) => coworker._id.toString() === req.user.id,
         )
         profile = currentUser
       }
@@ -99,7 +99,7 @@ export async function getOrganisation(
 export async function createOrganisation(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     const { name, id } = req.body
@@ -110,6 +110,8 @@ export async function createOrganisation(
         coWorkers: [req.user.id],
       })
 
+      organisation.generateJoinLink()
+      await organisation.save()
       successResponse(res, organisation)
     }
 
@@ -117,7 +119,7 @@ export async function createOrganisation(
       const organisation = await Organisation.findOneAndUpdate(
         { _id: id },
         { $set: { name } },
-        { new: true }
+        { new: true },
       ).populate(['coWorkers', 'owner'])
 
       organisation.generateJoinLink()
@@ -135,7 +137,7 @@ export async function createOrganisation(
 export async function getWorkspaces(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     const id = req.user.id
@@ -149,7 +151,7 @@ export async function getWorkspaces(
           ...workspace.toObject(),
           channels,
         }
-      })
+      }),
     )
 
     successResponse(res, workspacesWithChannels)

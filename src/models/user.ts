@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema<UserSchemaType>(
       type: String,
       required: [true, 'Please enter your email'],
       unique: true,
-      match: [/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/, 'Please enter a valid email'],
+      match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please enter a valid email'],
     },
     googleId: String,
     isOnline: Boolean,
@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema<UserSchemaType>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 )
 
 // Sign JWT and return

@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Slack Clone - JWT Token Generator</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #1a1a1a;
+                color: #ffffff;
+            }
+            .container {
+                background-color: #2d2d2d;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            }
+            h1,
+            h2 {
+                color: #4a9eff;
+                text-align: center;
+            }
+            .section {
+                margin: 30px 0;
+                padding: 20px;
+                background-color: #3a3a3a;
+                border-radius: 8px;
+                border-left: 4px solid #4a9eff;
+            }
+            .form-group {
+                margin: 15px 0;
+            }
+            label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+                color: #cccccc;
+            }
+            input,
+            button,
+            textarea {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #555;
+                border-radius: 4px;
+                background-color: #4a4a4a;
+                color: #ffffff;
+                font-size: 14px;
+            }
+            button {
+                background-color: #4a9eff;
+                color: white;
+                cursor: pointer;
+                font-weight: bold;
+                margin: 10px 0;
+            }
+            button:hover {
+                background-color: #357abd;
+            }
+            button:disabled {
+                background-color: #666;
+                cursor: not-allowed;
+            }
+            .result {
+                margin: 15px 0;
+                padding: 15px;
+                border-radius: 4px;
+                font-family: monospace;
+                word-break: break-all;
+            }
+            .success {
+                background-color: #1a472a;
+                border: 1px solid #2d5a3d;
+                color: #4ade80;
+            }
+            .error {
+                background-color: #472a1a;
+                border: 1px solid #5a2d2d;
+                color: #f87171;
+            }
+            .info {
+                background-color: #1a2847;
+                border: 1px solid #2d3a5a;
+                color: #60a5fa;
+            }
+            .copy-btn {
+                width: auto;
+                padding: 8px 15px;
+                margin-left: 10px;
+                font-size: 12px;
+            }
+            .login-url {
+                background-color: #2a1a47;
+                border: 1px solid #3d2d5a;
+                color: #a78bfa;
+                padding: 10px;
+                border-radius: 4px;
+                margin: 10px 0;
+                font-size: 12px;
+            }
+            .instructions {
+                background-color: #475569;
+                padding: 15px;
+                border-radius: 6px;
+                margin: 20px 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🚀 Slack Clone JWT Token Generator</h1>
+            <p style="text-align: center; color: #888">
+                Get working production JWT tokens for your Slack clone
+            </p>
+
+            <div class="instructions">
+                <h3>📋 Instructions:</h3>
+                <ol>
+                    <li>
+                        <strong>Method 1:</strong> Try the "Get Production
+                        Token" button first
+                    </li>
+                    <li>
+                        <strong>Method 2:</strong> If that fails, use "Register
+                        New User" to create a fresh user
+                    </li>
+                    <li>
+                        <strong>Method 3:</strong> Manually verify with a code
+                        (if you received one)
+                    </li>
+                    <li>
+                        Copy the generated login URL and open it in your browser
+                    </li>
+                </ol>
+            </div>
+
+            <!-- Method 1: Get Production Token for Existing User -->
+            <div class="section">
+                <h2>🎫 Method 1: Get Production Token</h2>
+                <p>
+                    Get a valid JWT token for an existing user (bypassing email
+                    verification)
+                </p>
+
+                <div class="form-group">
+                    <label for="existingEmail">Email Address:</label>
+                    <select id="existingEmail">
+                        <option value="designer@ontoplocal.com">
+                            designer@ontoplocal.com
+                        </option>
+                        <option value="jonas@ontoplocal.com">
+                            jonas@ontoplocal.com
+                        </option>
+                        <option value="">Custom email...</option>
+                    </select>
+                    <input
+                        type="email"
+                        id="customEmail"
+                        placeholder="Enter custom email"
+                        style="margin-top: 10px; display: none"
+                    />
+                </div>
+
+                <button onclick="getProductionToken()">
+                    Get Production Token
+                </button>
+                <div id="tokenResult"></div>
+            </div>
+
+            <!-- Method 2: Register New User -->
+            <div class="section">
+                <h2>👤 Method 2: Register New User</h2>
+                <p>Create a completely new user (will get verification code)</p>
+
+                <div class="form-group">
+                    <label for="newUsername">Username:</label>
+                    <input
+                        type="text"
+                        id="newUsername"
+                        placeholder="Enter username"
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="newEmail">Email Address:</label>
+                    <input
+                        type="email"
+                        id="newEmail"
+                        placeholder="Enter email"
+                    />
+                </div>
+
+                <button onclick="registerUser()">Register New User</button>
+                <div id="registerResult"></div>
+            </div>
+
+            <!-- Method 3: Verify with Code -->
+            <div class="section">
+                <h2>🔐 Method 3: Verify with Code</h2>
+                <p>If you received a verification code, enter it here</p>
+
+                <div class="form-group">
+                    <label for="verificationCode">Verification Code:</label>
+                    <input
+                        type="text"
+                        id="verificationCode"
+                        placeholder="Enter 6-digit code"
+                    />
+                </div>
+
+                <button onclick="verifyCode()">Verify Code</button>
+                <div id="verifyResult"></div>
+            </div>
+
+            <!-- API Configuration -->
+            <div class="section">
+                <h2>⚙️ API Configuration</h2>
+                <div class="form-group">
+                    <label for="apiUrl">API URL:</label>
+                    <input
+                        type="text"
+                        id="apiUrl"
+                        value="https://slack-clone-production-3f03.up.railway.app/api/v1"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="clientUrl">Client URL:</label>
+                    <input
+                        type="text"
+                        id="clientUrl"
+                        value="https://slack-clone-client-tan.vercel.app"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Show/hide custom email input
+            document
+                .getElementById('existingEmail')
+                .addEventListener('change', function () {
+                    const customEmailInput =
+                        document.getElementById('customEmail')
+                    if (this.value === '') {
+                        customEmailInput.style.display = 'block'
+                        customEmailInput.required = true
+                    } else {
+                        customEmailInput.style.display = 'none'
+                        customEmailInput.required = false
+                    }
+                })
+
+            function getApiUrl() {
+                return document.getElementById('apiUrl').value
+            }
+
+            function getClientUrl() {
+                return document.getElementById('clientUrl').value
+            }
+
+            function showResult(elementId, message, type = 'info') {
+                const element = document.getElementById(elementId)
+                element.innerHTML = `<div class="result ${type}">${message}</div>`
+            }
+
+            function showLoginUrl(token, email, username, elementId) {
+                const clientUrl = getClientUrl()
+                const loginUrl = `${clientUrl}?token=${token}&email=${encodeURIComponent(email)}&username=${encodeURIComponent(username)}`
+
+                const urlHtml = `
+                <div class="login-url">
+                    <strong>🌐 Login URL:</strong><br>
+                    <div style="word-break: break-all; margin: 10px 0;">
+                        <a href="${loginUrl}" target="_blank" style="color: #a78bfa;">${loginUrl}</a>
+                    </div>
+                    <button class="copy-btn" onclick="copyToClipboard('${loginUrl}')">Copy URL</button>
+                    <button class="copy-btn" onclick="copyToClipboard('${token}')">Copy Token Only</button>
+                </div>
+            `
+
+                document.getElementById(elementId).innerHTML += urlHtml
+            }
+
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('Copied to clipboard!')
+                })
+            }
+
+            async function getProductionToken() {
+                const emailSelect = document.getElementById('existingEmail')
+                const customEmail = document.getElementById('customEmail')
+                const email = emailSelect.value || customEmail.value
+
+                if (!email) {
+                    showResult(
+                        'tokenResult',
+                        'Please enter an email address',
+                        'error',
+                    )
+                    return
+                }
+
+                showResult('tokenResult', 'Getting production token...', 'info')
+
+                try {
+                    // Try the direct login endpoint first
+                    let response = await fetch(
+                        `${getApiUrl()}/auth/direct-login`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ email }),
+                        },
+                    )
+
+                    if (response.ok) {
+                        const data = await response.json()
+                        if (data.success && data.data.token) {
+                            showResult(
+                                'tokenResult',
+                                `✅ Token generated successfully!<br><strong>Username:</strong> ${data.data.username}<br><strong>Email:</strong> ${data.data.email}<br><strong>Token:</strong> ${data.data.token.substring(0, 50)}...`,
+                                'success',
+                            )
+                            showLoginUrl(
+                                data.data.token,
+                                data.data.email,
+                                data.data.username,
+                                'tokenResult',
+                            )
+                            return
+                        }
+                    }
+
+                    // If direct login fails, try signin to get verification code
+                    response = await fetch(`${getApiUrl()}/auth/signin`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email }),
+                    })
+
+                    const data = await response.json()
+
+                    if (data.success) {
+                        showResult(
+                            'tokenResult',
+                            `📧 Verification code sent! Check the Ethereal email preview URL in your Railway logs, or enter the code in Method 3 below.`,
+                            'info',
+                        )
+                    } else {
+                        showResult(
+                            'tokenResult',
+                            `❌ Error: ${data.data?.name || 'Unknown error'}`,
+                            'error',
+                        )
+                    }
+                } catch (error) {
+                    showResult(
+                        'tokenResult',
+                        `❌ Network error: ${error.message}`,
+                        'error',
+                    )
+                }
+            }
+
+            async function registerUser() {
+                const username = document.getElementById('newUsername').value
+                const email = document.getElementById('newEmail').value
+
+                if (!username || !email) {
+                    showResult(
+                        'registerResult',
+                        'Please enter both username and email',
+                        'error',
+                    )
+                    return
+                }
+
+                showResult('registerResult', 'Registering user...', 'info')
+
+                try {
+                    // Try create-user-direct first
+                    let response = await fetch(
+                        `${getApiUrl()}/auth/create-user-direct`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ username, email }),
+                        },
+                    )
+
+                    if (response.ok) {
+                        const data = await response.json()
+                        if (data.success && data.data.token) {
+                            showResult(
+                                'registerResult',
+                                `✅ User created successfully!<br><strong>Username:</strong> ${data.data.username}<br><strong>Email:</strong> ${data.data.email}<br><strong>Token:</strong> ${data.data.token.substring(0, 50)}...`,
+                                'success',
+                            )
+                            showLoginUrl(
+                                data.data.token,
+                                data.data.email,
+                                data.data.username,
+                                'registerResult',
+                            )
+                            return
+                        }
+                    }
+
+                    // Fallback to regular register
+                    response = await fetch(`${getApiUrl()}/auth/register`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ username, email }),
+                    })
+
+                    const data = await response.json()
+
+                    if (data.success) {
+                        showResult(
+                            'registerResult',
+                            `📧 User registered! Verification code sent. Check your Railway logs for the Ethereal email preview URL, or enter the code in Method 3 below.`,
+                            'success',
+                        )
+                    } else {
+                        showResult(
+                            'registerResult',
+                            `❌ Error: ${data.data?.name || 'Unknown error'}`,
+                            'error',
+                        )
+                    }
+                } catch (error) {
+                    showResult(
+                        'registerResult',
+                        `❌ Network error: ${error.message}`,
+                        'error',
+                    )
+                }
+            }
+
+            async function verifyCode() {
+                const code = document.getElementById('verificationCode').value
+
+                if (!code) {
+                    showResult(
+                        'verifyResult',
+                        'Please enter verification code',
+                        'error',
+                    )
+                    return
+                }
+
+                showResult('verifyResult', 'Verifying code...', 'info')
+
+                try {
+                    const response = await fetch(`${getApiUrl()}/auth/verify`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ loginVerificationCode: code }),
+                    })
+
+                    const data = await response.json()
+
+                    if (data.success && data.data.token) {
+                        showResult(
+                            'verifyResult',
+                            `✅ Verification successful!<br><strong>Username:</strong> ${data.data.username}<br><strong>Email:</strong> ${data.data.email}<br><strong>Token:</strong> ${data.data.token.substring(0, 50)}...`,
+                            'success',
+                        )
+                        showLoginUrl(
+                            data.data.token,
+                            data.data.email,
+                            data.data.username,
+                            'verifyResult',
+                        )
+                    } else {
+                        showResult(
+                            'verifyResult',
+                            `❌ Error: ${data.data?.name || 'Invalid verification code'}`,
+                            'error',
+                        )
+                    }
+                } catch (error) {
+                    showResult(
+                        'verifyResult',
+                        `❌ Network error: ${error.message}`,
+                        'error',
+                    )
+                }
+            }
+        </script>
+    </body>
+</html>

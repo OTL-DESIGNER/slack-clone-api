@@ -21,3 +21,4 @@ node_modules/
 .env.production.local
 __DateNight
 old-teammates.text
+.vercel
