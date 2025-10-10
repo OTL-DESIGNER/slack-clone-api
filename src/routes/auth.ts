@@ -1,5 +1,11 @@
 import express from 'express'
-import { googleCallback, register, signin, verify } from '../controllers/auth'
+import {
+  googleCallback,
+  register,
+  signin,
+  verify,
+  createUserDirect,
+} from '../controllers/auth'
 import passport from 'passport'
 
 const router = express.Router()
@@ -10,5 +16,6 @@ router.post('/verify', verify)
 router.get('/google', passport.authenticate('google', ['profile', 'email']))
 
 router.get('/google/callback', googleCallback)
+router.post('/create-user-direct', createUserDirect)
 
 export default router

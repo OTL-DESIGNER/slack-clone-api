@@ -7,10 +7,11 @@
   "license": "MIT",
   "scripts": {
     "start": "nodemon --exec ts-node src/index.ts",
-    "build": "tsc -p .",
+    "build": "echo 'Build step skipped for Vercel deployment'",
     "lint": "tslint -c tslint.json -p tsconfig.json --fix"
   },
   "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
     "@types/socket.io": "^3.0.2",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
@@ -37,6 +38,8 @@
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {
+    "@types/node": "^24.7.1",
+    "@vercel/node": "^5.3.26",
     "nodemon": "^3.0.1",
     "typescript": "^5.1.3"
   }

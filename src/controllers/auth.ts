@@ -32,8 +32,8 @@ passport.use(
       } catch (error) {
         return done(error, false)
       }
-    }
-  )
+    },
+  ),
 )
 
 passport.serializeUser((user, done) => {
@@ -50,7 +50,7 @@ passport.deserializeUser((user, done) => {
 export const register = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const { username, email } = req.body
 
@@ -84,7 +84,7 @@ export const register = async (
     sendEmail(
       email,
       'Slack confirmation code',
-      verificationHtml(verificationToken)
+      verificationHtml(verificationToken),
     )
 
     res.status(201).json({
@@ -107,7 +107,7 @@ export const register = async (
 export const signin = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const { email } = req.body
 
@@ -138,7 +138,7 @@ export const signin = async (
     sendEmail(
       email,
       'Slack confirmation code',
-      verificationHtml(verificationToken)
+      verificationHtml(verificationToken),
     )
 
     res.status(201).json({
@@ -161,7 +161,7 @@ export const signin = async (
 export const verify = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     if (!req.body.loginVerificationCode) {
@@ -215,7 +215,7 @@ export const verify = async (
 export const googleCallback = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   passport.authenticate('google', (err, user) => {
     if (err) {
@@ -231,7 +231,69 @@ export const googleCallback = async (
     const token = user.getSignedJwtToken()
 
     res.redirect(
-      `${process.env.CLIENT_URL}?token=${token}&email=${user.email}&username=${user.username}`
+      `${process.env.CLIENT_URL}?token=${token}&email=${user.email}&username=${user.username}`,
     )
   })(req, res, next)
+}
+
+// @desc    Create user directly (admin only - bypasses email verification)
+// @route   POST /api/v1/auth/create-user-direct
+// @access  Public (for now, can be secured later)
+export const createUserDirect = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { username, email } = req.body
+
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      data: {
+        name: 'Please provide an email address',
+      },
+    })
+  }
+
+  if (!username) {
+    return res.status(400).json({
+      success: false,
+      data: {
+        name: 'Please provide a username',
+      },
+    })
+  }
+
+  try {
+    // Check if user already exists
+    const emailExist = await User.findOne({ email })
+
+    if (emailExist) {
+      return res.status(400).json({
+        success: false,
+        data: {
+          name: 'User already exists',
+        },
+      })
+    }
+
+    // Create user directly without verification
+    const user = await User.create({
+      username,
+      email,
+    })
+
+    // Return user data with JWT token immediately
+    res.status(201).json({
+      success: true,
+      data: {
+        username: user.username,
+        email: user.email,
+        token: user.getSignedJwtToken(),
+        message: 'User created successfully without email verification',
+      },
+    })
+  } catch (error) {
+    next(error)
+  }
 }
