@@ -236,3 +236,52 @@ export const googleCallback = async (
     )
   })(req, res, next)
 }
+
+// @desc    Generate production token (temporary for Railway setup)
+// @route   POST /api/v1/auth/generate-production-token
+// @access  Public (temporary)
+export const generateProductionToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { email } = req.body
+
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      data: {
+        name: 'Please provide an email address',
+      },
+    })
+  }
+
+  try {
+    const user = await User.findOne({ email })
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        data: {
+          name: 'User not found',
+        },
+      })
+    }
+
+    const token = user.getSignedJwtToken()
+    const loginUrl = `${process.env.CLIENT_URL}?token=${token}&email=${encodeURIComponent(user.email)}&username=${encodeURIComponent(user.username)}`
+
+    res.status(200).json({
+      success: true,
+      data: {
+        username: user.username,
+        email: user.email,
+        token: token,
+        loginUrl: loginUrl,
+        message: 'Production token generated successfully',
+      },
+    })
+  } catch (error) {
+    next(error)
+  }
+}
