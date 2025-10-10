@@ -46,7 +46,7 @@ app.use(
     name: 'session',
     keys: ['cyberwolve'],
     maxAge: 24 * 60 * 60 * 100,
-  })
+  }),
 )
 
 app.use(passport.initialize())
@@ -80,7 +80,18 @@ app.use(limiter)
 app.use(hpp())
 
 // Enable CORS
-app.use(cors())
+app.use(
+  cors({
+    origin: [
+      'https://slack-clone-client-tan.vercel.app',
+      'http://localhost:3000',
+      process.env.CLIENT_URL,
+    ].filter(Boolean),
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    credentials: true,
+  }),
+)
 
 // Store users' sockets by their user IDs
 const users = {}
@@ -105,7 +116,7 @@ io.on('connection', (socket) => {
       const updatedChannel = await Channels.findByIdAndUpdate(
         id,
         { $pull: { hasNotOpen: userId } },
-        { new: true }
+        { new: true },
       )
       io.to(id).emit('channel-updated', updatedChannel)
     }
@@ -116,7 +127,7 @@ io.on('connection', (socket) => {
       const updatedConversation = await Conversations.findByIdAndUpdate(
         id,
         { $pull: { hasNotOpen: userId } },
-        { new: true }
+        { new: true },
       )
       io.to(id).emit('convo-updated', updatedConversation)
     }
@@ -140,7 +151,7 @@ io.on('connection', (socket) => {
           $addToSet: { threadReplies: userId },
           $inc: { threadRepliesCount: 1 },
         },
-        { new: true }
+        { new: true },
       ).populate(['threadReplies', 'sender', 'reactions.reactedToBy'])
 
       io.to(messageId).emit('message-updated', {
@@ -186,7 +197,7 @@ io.on('connection', (socket) => {
           const updatedChannel = await Channels.findByIdAndUpdate(
             channelId,
             { hasNotOpen },
-            { new: true }
+            { new: true },
           )
 
           io.to(channelId).emit('channel-updated', updatedChannel)
@@ -220,7 +231,7 @@ io.on('connection', (socket) => {
           const updatedConversation = await Conversations.findByIdAndUpdate(
             conversationId,
             { hasNotOpen },
-            { new: true }
+            { new: true },
           )
           io.to(conversationId).emit('convo-updated', updatedConversation)
           socket.broadcast.emit('notification', {
@@ -233,7 +244,7 @@ io.on('connection', (socket) => {
       } catch (error) {
         console.log(error)
       }
-    }
+    },
   )
 
   socket.on('message-view', async (messageId) => {
@@ -267,22 +278,22 @@ io.on('connection', (socket) => {
         message.reactions.some(
           (r) =>
             r.emoji === emoji &&
-            r.reactedToBy.some((v) => v.toString() === userId)
+            r.reactedToBy.some((v) => v.toString() === userId),
         )
       ) {
         // Find the reaction that matches the emoji and remove userId from its reactedToBy array
         const reactionToUpdate = message.reactions.find(
-          (r) => r.emoji === emoji
+          (r) => r.emoji === emoji,
         )
         if (reactionToUpdate) {
           reactionToUpdate.reactedToBy = reactionToUpdate.reactedToBy.filter(
-            (v) => v.toString() !== userId
+            (v) => v.toString() !== userId,
           )
 
           // If reactedToBy array is empty after removing userId, remove the reaction object
           if (reactionToUpdate.reactedToBy.length === 0) {
             message.reactions = message.reactions.filter(
-              (r) => r !== reactionToUpdate
+              (r) => r !== reactionToUpdate,
             )
           }
           // await message.populate([
@@ -305,7 +316,7 @@ io.on('connection', (socket) => {
       } else {
         // Find the reaction that matches the emoji and push userId to its reactedToBy array
         const reactionToUpdate = message.reactions.find(
-          (r) => r.emoji === emoji
+          (r) => r.emoji === emoji,
         )
         if (reactionToUpdate) {
           reactionToUpdate.reactedToBy.push(userId)
@@ -409,8 +420,14 @@ app.use('/api/v1/conversations', conversations)
 // error handler
 app.use(errorResponse)
 
-// Start the server
-const port = process.env.PORT || 8080
-server.listen(port, () => {
-  console.log(`Server is running on port ${port}`)
-})
+// For Vercel serverless deployment
+if (process.env.NODE_ENV !== 'production') {
+  // Start the server locally
+  const port = process.env.PORT || 8081
+  server.listen(port, () => {
+    console.log(`Server is running on port ${port}`)
+  })
+}
+
+// Export for Vercel serverless
+export default server
