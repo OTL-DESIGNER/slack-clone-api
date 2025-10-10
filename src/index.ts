@@ -58,9 +58,9 @@ app.use(express.urlencoded({ extended: true }))
 // cookie-parser configuration
 app.use(cookieParser())
 
-// Dev logging middleware
+// Disable all logging middleware in production
 if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'))
+  // app.use(morgan('dev')) // Disabled to prevent log flooding
 }
 
 // Set security headers
@@ -417,19 +417,27 @@ app.use('/api/v1/teammates', teammates)
 app.use('/api/v1/organisation', organisation)
 app.use('/api/v1/conversations', conversations)
 
-// error handler
-app.use(errorResponse)
-
-// Start the server - force start unless explicitly in Vercel serverless
-const isVercelServerless =
-  process.env.VERCEL === '1' || process.env.VERCEL === 'true'
-
-if (!isVercelServerless) {
-  const port = Number(process.env.PORT) || 8081
-  server.listen(port, '0.0.0.0', () => {
-    console.log(`Server is running on port ${port}`)
+// Simple health check route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Slack Clone API is running!',
+    status: 'healthy',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
   })
-}
+})
+
+// error handler
+app.use((error: any, req: any, res: any, next: any) => {
+  // Simple error handler to prevent log flooding
+  res.status(500).json({ name: 'Internal Server Error' })
+})
+
+// Start the server
+const port = Number(process.env.PORT) || 8081
+server.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on port ${port}`)
+})
 
 // Export for Vercel serverless
 export default server

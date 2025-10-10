@@ -22,7 +22,7 @@ function errorResponse(error: CustomError, res: Response) {
     res.status(400).json({ name: `Invalid ${error.path}: ${error.value}` })
   }
   // Handle other types of errors if needed
-  console.error(error)
+  console.error('Error:', error.name, error.message)
   return res.status(500).json({ name: 'Internal Server Error' })
 }
 
